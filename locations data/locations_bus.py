@@ -54,5 +54,5 @@ for i in range(len(all_gdf)):
 # idea for path filter
 '''path_nodes = lambda x: 'node info here' in x and 'more node info' in x 
 
-shortest_paths = nx.all_shortest_paths(G)
+shortest_paths = nx.all_shortest_paths(G,weight="weight")
 filter(path_nodes,shortest_paths)'''
