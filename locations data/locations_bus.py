@@ -2,7 +2,8 @@ import geopandas as gpd
 import pandas as pd
 from shapely import wkt
 import networkx as nx
-
+import contextily as ctx
+import matplotlib.pyplot as plt
 
 groc = pd.read_csv('locations data/Portland Bus Route Locations- Grocery Stores.csv')
 scho = pd.read_csv('locations data/Portland Bus Route Locations- Schools.csv')
@@ -12,7 +13,17 @@ all['WKT'] = gpd.GeoSeries.from_wkt(all['WKT'])
 all_gdf = gpd.GeoDataFrame(all, geometry = 'WKT').set_crs("EPSG:4326")
 all_gdf = all_gdf.to_crs("EPSG:3857")
 
-### graph code form 'load_graph.py'
+# plot priority locations data
+def gen_plot():
+    ax = all_gdf.plot(figsize=(10, 8), column = 'description', categorical=True,legend=True)
+    ax.axis('off')
+    ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=all_gdf.crs)
+    plt.suptitle('Portland Priority Locations', fontsize=10) 
+    plt.savefig('figs/priority_locations.png')
+
+#gen_plot()
+
+### graph code from 'load_graph.py'
 intersections = gpd.read_file('data/intersections.geojson')
 # set geometry to the geometry column
 intersections = intersections.set_geometry('geometry')
@@ -44,12 +55,12 @@ G = load_graph(roads)
 
 
 # loop intersections and all_gdf and add columns for distance from each node to points of interest
-
-
+# store distance
 for i in range(len(all_gdf)):
     point = all_gdf.iloc[i,0]
     intersections[all_gdf.iloc[i,1]] = intersections['geometry'].distance(point)
 
+# extact minimum distances and create list of priority nodes
 loc_list = []
 for i in range(4,36):
     min_node = intersections.iloc[:,i].idxmin()
@@ -64,6 +75,7 @@ for node in loc_list:
     path = shortest_paths[node]
     if set(loc_list).issubset(path):
         print (shortest_paths[node])
+        
     
 '''def find_shortest_path(p):
     for path in p:

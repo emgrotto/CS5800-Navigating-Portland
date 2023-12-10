@@ -3,13 +3,9 @@
 # Final Report: Navigating Portland
 
 ## Introduction
-*a context that will help me understand your chosen topic, with a clearly-
-defined question inspired by your issue with a rationale that explains what you are doing and why. I’d also like a couple of paragraphs where you tell me why this particular topic is important to you, and why each of you in the group is personally invested in answering this question.
-NOTE: you can just copy and paste that section of your Final Project Proposal to form your
-Introduction*
 
-1.   Question:
-Given Portland roads as the network we travel on. Can we determine optimal locations for a given number of bus stops, such that we are minimizing distance to amenities (schools, healthcare and grocery shops)?
+### Question:
+***Given Portland roads as the network we travel on. Can we determine optimal locations for a given number of bus stops, such that we are minimizing distance to amenities (schools, healthcare and grocery shops)?***
  
 Shuiming chen:
 
@@ -40,6 +36,72 @@ computer program (e.g. in Python/Java/C), make sure you submit the relevant comp
 program as an Appendix to your .pdf report. I recognize that each report will be different, so I
 will customize these 25 marks to align with the specific nature of your project.*
 
+### Data Collection
+We began our analysis by collecting data on the road systems in Maine. Data was retrieved from the Main DOT open data arcgis server, and filtered to include only roads in the city of Portland. The data was saved such that location geometries were transformed into a X,Y format on a 2D plane- this was accomplished by using the EPSG 3857 coordinate system.
+
+[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/extract_data.py)
+
+**Portland Road Data Mapped**
+
+![Alt text](figs/portland_roads.png?raw=true "Raw Portalnd Road Data Mapped")
+
+Additionally, we gathered data on priority locations as described above, utilizing Google maps. Location data for grocery stores, schools, and healthcare facilities was retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was transformed into the same coordinate system used above.
+
+[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/locations%20data/locations_bus.py)
+
+**Priority Locations Data Mapped**
+
+![Alt text](figs/priority_locations.png?raw=true "Raw Portalnd Road Data Mapped")
+
+### Data Transformation
+
+The data collected from the MaineDOT contained road locations as linestrings. Our goal was to utilize the data in graph format so we could utilize the graph traversal algorithms learned in Module 5, so we needed to extrapolate specific locations to use as graph nodes.
+
+This was accomplished by extracting the beginning and ending coordinates of each road, and utilizing those coordinates to create nodes. If a node had already created, the road was connected to the existing node as a graph edge.
+Nodes and edges were stored in an adjacency list format, utilizing a nested Python dictionary data structure. The node(intersection) point coordinates are used as keys, which have a dictionary as a value. The value dictionary includes the "neighbors" key, which is associated with a list of adjacent nodes(intersections). Additionally road indexes, number or roads, and geometry data is stored in the nested dictionaries.
+
+[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/build_intersection_data.py)
+
+**Intersection Data Mapped**
+
+![Alt text](figs/sorted_intersections.png?raw=true "Intersection Data Mapped")
+
+Next, a graph was created utilizing the Networkx Python package. Networkx is a package designed specifically for building, utilizing and manipulating complex graphs/network structures.<sup>4</sup> 
+
+A Networkx graph was created from the road data. Road lengths were stored as edge weights, and, as above, road instersections were used as nodes.
+
+## Need More here
+
+
+
+[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/load_graph.py)
+
+
+**Road Data Graph Mapped**
+
+![Alt text](figs/connected_components.png?raw=true "Road Data Graph")
+
+**Graph Information**
+
+```
+Number of roads:  3607
+Number of intersections:  2735
+
+Graph information:
+Number of nodes:  2735
+Number of edges:  3548
+Number of connected components:  7
+max degree:  8
+min degree:  1
+```
+
+Next we needed to identify which graph nodes to include in our indeal public transportation route.
+
+To accomplish this we utilized some of the prinicples learned in Module 8- dynamic programing and Modules 6 and 7- greedy algorithms to create an algorithm that compared each single high-priority point to all our graph nodes (storing each value rather than iterating), and ultimatly selecting the nodes with the minimum distance from each priority location as the representative node for that location.
+
+
+[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/locations%20data/locations_bus.py)
+
 
 ## Conclusion
 
@@ -53,8 +115,23 @@ Please note: I will not give you a “page limit” because some reports will na
 Your goal is to address each of the points listed above: if you do that, you will do very well on this Final
 Project Report.*
 
+Shuiming chen:
+
+Amanda:
+
+Emma:
+
 ## References
 1. Huitt, W. (2007). Maslow's hierarchy of needs. Educational Psychology Interactive. Valdosta, GA: Valdosta State University. Retrieved Nov 13, 2023 from, http://www.edpsycinteractive.org/topics/regsys/maslow.html
 2. Greater Portland Transit District. (2023). 2023 Operating Budget. Retrieved Nov 13, 2023, from https://gpmetro.org/DocumentCenter/View/1497/2023-Operating-Budget--Approved-22323?bidId=
 3. Google Maps. ( n.d.). [ Portland Bus Root Locations]. Retrieved December 1, 2023, from https://www.google.com/maps/d/edit?mid=1ndsALekiokpddnr-6D7I4t2-j3xU9xs&ll=43.67155787430646%2C-70.2770516&z=13
-4. Penninsula Transit Committee. (2008). Portland Peninsula Transit Study. Retrieved from https://content.civicplus.com/api/assets/c4e5ef98-a109-4021-890c-57c368d647d8
+4. Aric A. Hagberg, Daniel A. Schult and Pieter J. Swart, “Exploring network structure, dynamics, and function using NetworkX”, in Proceedings of the 7th Python in Science Conference (SciPy2008), Gäel Varoquaux, Travis Vaught, and Jarrod Millman (Eds), (Pasadena, CA USA), pp. 11–15, Aug 2008
+
+***Not sure if needed***
+
+5. Penninsula Transit Committee. (2008). Portland Peninsula Transit Study. Retrieved from https://content.civicplus.com/api/assets/c4e5ef98-a109-4021-890c-57c368d647d8
+
+
+## Appendix
+### Code
+[Link to project GitHub repo](https://github.com/emgrotto/CS5800-Navigating-Portland/tree/main)
