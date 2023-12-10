@@ -8,9 +8,9 @@ groc = pd.read_csv('locations data/Portland Bus Route Locations- Grocery Stores.
 scho = pd.read_csv('locations data/Portland Bus Route Locations- Schools.csv')
 hc = pd.read_csv('locations data/Portland Bus Route Locations- Healthcare Facilities.csv')
 all = pd.concat([groc,scho,hc])
-all['WKT'] = gpd.GeoSeries.from_wkt(all['WKT']).set_crs("EPSG:3857")
-all_gdf = gpd.GeoDataFrame(all, geometry = 'WKT')
-
+all['WKT'] = gpd.GeoSeries.from_wkt(all['WKT'])
+all_gdf = gpd.GeoDataFrame(all, geometry = 'WKT').set_crs("EPSG:4326")
+all_gdf = all_gdf.to_crs("EPSG:3857")
 
 ### graph code form 'load_graph.py'
 intersections = gpd.read_file('data/intersections.geojson')
@@ -45,14 +45,35 @@ G = load_graph(roads)
 
 # loop intersections and all_gdf and add columns for distance from each node to points of interest
 
+
 for i in range(len(all_gdf)):
     point = all_gdf.iloc[i,0]
     intersections[all_gdf.iloc[i,1]] = intersections['geometry'].distance(point)
 
+loc_list = []
+for i in range(4,36):
+    min_node = intersections.iloc[:,i].idxmin()
+    tup = (intersections.iloc[min_node].geometry.x ,intersections.iloc[min_node].geometry.y)
+    loc_list.append(tup)
 
-### NEED TO GET NODE NAME OUT OF INTERSECTIONS GDF###
-# idea for path filter
-'''path_nodes = lambda x: 'node info here' in x and 'more node info' in x 
+# using simple path does not exectute d/t running time
+shortest_paths = nx.shortest_path(G, source = loc_list[0], weight='weight')
+shortest_path_cost = nx.shortest_path_length(G, source = loc_list[0], weight='weight')
 
-shortest_paths = nx.all_shortest_paths(G,weight="weight")
-filter(path_nodes,shortest_paths)'''
+for node in loc_list:
+    path = shortest_paths[node]
+    if set(loc_list).issubset(path):
+        print (shortest_paths[node])
+    
+'''def find_shortest_path(p):
+    for path in p:
+        
+        if set(loc_list).issubset(path):
+            print(path)
+            return(path)
+        
+       #if all(x in path for x in loc_list):
+           # print(path)
+          #  return path
+
+find_shortest_path(shortest_paths)'''
