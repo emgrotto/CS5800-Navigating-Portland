@@ -199,9 +199,23 @@ Please note: I will not give you a “page limit” because some reports will na
 Your goal is to address each of the points listed above: if you do that, you will do very well on this Final
 Project Report.*
 
+Our analysis shows that it is possible to generate an approximate ideal bus route utilizing graph algorithms. Due to the complexity of the problem we were not able to generate a true optimal path, but rather 3/2 approximation. We visually compared our path with the existing bus routes in Portland:
+                                                                                 
+
+<p flout = "left">
+<img src=figs/shortest_path.png width="200">
+<img src=figs/metro_downtown.png width="250">
+</p>
+
+While there are some similarities, there are substantial differences as well.
+
+It is likely the Metro routes consider additional factors we did not address with this project. Future expansion of the project could include utilizing census data to factor population density into the route, updating the graph generated from the roads data to reflect road direction- some roads are not bidirectional, and partitioning our single path into multiple shorter paths more akin to the multiple routes utilized by the Metro system.
+
 Shuiming chen:
 
 Amanda:
+I learned quite a bit from this project. I was excited to learn of the availability of GIS data for the road systems in Maine. I think I will definitely utilize that for future projects. This project taught me a lot about applying theories learned in class to real world problems. Particularly, I learned about the challenges that come from trying to adapt and utilize a textbook solution when your problem is not textbook perfect.
+
 
 Emma:
 
