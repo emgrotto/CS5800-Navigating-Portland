@@ -1,7 +1,7 @@
 
 
 # Final Report: Navigating Portland
-
+Authors: Emma Morse, Shuiming Chen, Amanda Haskell
 ## Introduction
 
 ### Question:
@@ -27,17 +27,10 @@ Greater Portland’s primary public transportation system: GPMetro is an organiz
 Having researched this, it is clear that this is a precious resource that does not get the funding it needs. Being a pedestrian first resident of Portland, I have on many occasions attempted to use the bus system and found it to be both infrequent and bus-stops inconveniently placed for my desired destination. Without learning to drive and accepting the cost of car ownership there are unfortunately still areas of Portland and surrounding towns that are inaccessible to me. We cannot necessarily explore the issue of frequency in this project, however; I am interested to learn if the routes have been designed optimally. Are there alternative routes that are more efficient and hence cheaper to maintain?
 
 
-## Analysis
-
-*a description of the methods you used to gather your data and/or solve
-your problem. What did you do and why? Show clear steps throughout every step of your
-analysis, referencing specific topics/modules covered in the CS 5800 course. If you produced a
-computer program (e.g. in Python/Java/C), make sure you submit the relevant computer
-program as an Appendix to your .pdf report. I recognize that each report will be different, so I
-will customize these 25 marks to align with the specific nature of your project.*
+## Analysis and Results
 
 ### Data Collection
-We began our analysis by collecting data on the road systems in Maine. Data was retrieved from the Main DOT open data arcgis server, and filtered to include only roads in the city of Portland. The data was saved such that location geometries were transformed into a X,Y format on a 2D plane- this was accomplished by using the EPSG 3857 coordinate system.
+We began our analysis by collecting data on the road systems in Maine. Data was retrieved from the Maine DOT open data arcgis server, and filtered to include only roads in the city of Portland. The data was saved such that location geometries were transformed into a X,Y format on a 2D plane- this was accomplished by using the EPSG 3857 coordinate system.
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/extract_data.py)
 
@@ -45,9 +38,9 @@ We began our analysis by collecting data on the road systems in Maine. Data was 
 
 ![Alt text](figs/portland_roads.png?raw=true "Raw Portalnd Road Data Mapped")
 
-Additionally, we gathered data on priority locations as described above, utilizing Google maps. Location data for grocery stores, schools, and healthcare facilities was retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was transformed into the same coordinate system used above.
+Next we gathered data on priority locations utilizing Google maps. Location data for grocery stores, schools, and healthcare facilities was retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was projected onto the same coordinate system used with the road system data.
 
-[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/locations%20data/locations_bus.py)
+[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/utils.py)
 
 **Priority Locations Data Mapped**
 
@@ -55,10 +48,12 @@ Additionally, we gathered data on priority locations as described above, utilizi
 
 ### Data Transformation
 
-The data collected from the MaineDOT contained road locations as linestrings. Our goal was to utilize the data in graph format so we could utilize the graph traversal algorithms learned in Module 5, so we needed to extrapolate specific locations to use as graph nodes.
+The data collected from the MaineDOT contained road locations as linestrings. Our goal was to transform that data into a graph format so we could utilize the graph traversal algorithms learned in Module 5.
 
-This was accomplished by extracting the beginning and ending coordinates of each road, and utilizing those coordinates to create nodes. If a node had already created, the road was connected to the existing node as a graph edge.
-Nodes and edges were stored in an adjacency list format, utilizing a nested Python dictionary data structure. The node(intersection) point coordinates are used as keys, which have a dictionary as a value. The value dictionary includes the "neighbors" key, which is associated with a list of adjacent nodes(intersections). Additionally road indexes, number or roads, and geometry data is stored in the nested dictionaries.
+Nodes for the graph were created from road intersections. This was accomplished by extracting the beginning and ending coordinates of each road, creating a node at each of those locations if such as node did not already exist, or updating nodes that did already exist.
+Weighted edges were created from the road segments between intersections, with a weight equal to the length of said segment.
+
+Nodes and edges were stored in an adjacency list format, utilizing a nested Python dictionary data structure. The node(intersection) point coordinates were used as keys, with a dictionary as a value. The value dictionary includes the "neighbors" key, which is associated with a list of adjacent nodes(intersections). Additionally, road indexes, number or roads, and geometry data is stored in the nested dictionaries.
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/build_intersection_data.py)
 
@@ -68,13 +63,11 @@ Nodes and edges were stored in an adjacency list format, utilizing a nested Pyth
 
 Next, a graph was created utilizing the Networkx Python package. Networkx is a package designed specifically for building, utilizing and manipulating complex graphs/network structures.<sup>4</sup> 
 
-A Networkx graph was created from the road data. Road lengths were stored as edge weights, and, as above, road instersections were used as nodes.
-
-## Need More here
+This gave us an undirected, weighted graph with parameters shown below. As explained above, nodes are roda intersections, edges are road segments between intersections, and edge weights are the road segment lengths.
 
 
 
-[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/load_graph.py)
+[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/utils.py)
 
 
 **Road Data Graph Mapped**
@@ -95,12 +88,50 @@ max degree:  8
 min degree:  1
 ```
 
-Next we needed to identify which graph nodes to include in our indeal public transportation route.
+Next we needed to identify which graph nodes to include in our ideal public transportation route.
 
-To accomplish this we utilized some of the prinicples learned in Module 8- dynamic programing and Modules 6 and 7- greedy algorithms to create an algorithm that compared each single high-priority point to all our graph nodes (storing each value rather than iterating), and ultimatly selecting the nodes with the minimum distance from each priority location as the representative node for that location.
+We judged that the graph produced from the roads was dense enough that all priority locations would be within reasonable walking distance from a road intersection, so the planimetric distance from our priority location coordinates to the intersection coordinates would be a reasonable heuristic to use find priority graph nodes.
 
+We utilized some of the principles learned in Module 8- dynamic programing and Modules 6 and 7- greedy algorithms to create an algorithm that compared each single high-priority point to all our graph nodes (storing each value rather than iterating), and ultimately selecting the nodes with the minimum distance from each priority location as the representative node for that location. This gave us a list of 32 high priority nodes to include in our path.
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/locations%20data/locations_bus.py)
+
+
+### Shortest Path Analysis
+
+Our original plan to find the optimal transportation route connecting priority locations was to use a version of a shortest path algorithm selecting minimum distances between nodes.
+
+We began by applying Dijkstra's algorithm via the Networkx.shorteset_path method, selecting a source node from our list of priority nodes. We quickly realized, while this will give us the shortest path between each other priority node and the source node, it did not generate a path that included ALL of the priority nodes. 
+
+We considered apply Dijkstra's in a greedy stepwise manner: select the shortest distance between nodes in the priority node list, then select the node eith the shortest path from the second node and so on, iterating through the remaining nodes in the priority node list. We realized though, that this was not guaranteed to give us the shortest path between all nodes of the graph.
+
+We then considered finding all the simple paths in the graph, filtering by only paths including our priority nodes, and selecting the path with the minimum cost. 
+
+While this would have likely given us the optimal answer, we utilized the topics learned from Module 1 and judged the time complexity to be prohibitive as our graph has 2735 nodes and 3548 edges. This method would have a time complexity of O(n!).
+
+Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again very time complex. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This again had a time complexity of O(n!).
+
+As we continued to contemplate our problem, we recognized that it was very close in nature to the Traveling Salesman Problem (TSP) that we learned about in Module 11. Although we were not attempting to generate a Hamiltonian Cycle, we were seeking the minimum cost path that would take us through a set of nodes in a graph- essentially a TSP tour of a certain subset of the graph, without returning to the starting node. Since TSP in NP Complete, there is no way to generate an optimal output in polynomial time. This led us to conclude that the best method to find our ideal bus route would be to utilize the methods learned in Module 12 and generate an approximation algorithm for a modified TSP tour.
+
+We were able to again to utilize some of the existing methods in the Networkx package and generate an approximate minimum cost path through all of our priority nodes. The approximation we utilized was the Christofides algorithm.
+
+The Christofides algorithm begins by creating a minimum spanning tree (M) for the desired nodes. A set is created of odd-degree vertices (oV) from M. oV contains, at a minimum, all the leaf nodes of M and by the handshaking lemma, oV has an even number of vertices. A minimum weight perfect matching is made from the complete graph of oV. The edges of that matching are combined with the edges of M and a graph is formed with all nodes having an even degree. A Eulerian tour is made of the new graph. Duplicate nodes are removed from the path, generating an approximate minimum cost tour<sup>5</sup>.
+
+Christofides algorithm, like other metric TSP algorithms, utilizes the triangle inequality to prove the validity of the tour that is generated. That is, for any 3 nodes in a complete weighted graph with non-negative edgeds {u,v,w} that form a triangle: c(u,w) <= c(u,v) + c(v,w). Since our graph is complete, has non-negative weighted edges, and is built on an X,Y coordinate plane, the triangle inequality does hold and the tour generated by removing duplicate nodes form the Eulerian tour is valid. Since the algorithm utilizes a minimum spanning tree, we know that each edge added to that tree is the minimum valued edge that connects the existing tree (starting from an empty tree) to the remaining nodes that are not yet in the tree. Such edges are added until no nodes remain unconnected. So we know that the tree that is generated both spans all nodes of our subset, and is a set of minimum valued edges that span those nodes. So Christofides algorithm has generated an approximate shortest path between all our priority nodes.
+
+When considering the execution of Metric TSP algorithms, we know that the cost of the MST generated by the approximation algorithm will always be less than or equal to the cost c of the optimal solution (OPT), as an MST can be generated by deleting any edge from a tour and all edges are non- negative. So c(MST) <= c(OPT tour). Since we are using a Eulerian tour (W) to traverse the MST, we will visit every edge/vertex exactly twice. So the cost for this walk will be equal to two times the cost of the tree itself: c(W) = 2c(MST).
+Combining these two factors, we know that c(W) <= 2*c(OPT).
+Since we know the triangle equality holds, then we know that the path that is generated when duplicate nodes are removed from W must have a value less than the W, so for our final resulting path P: c(P) <= c(W) <= 2*c(OPT). Therefore the c(P) <= 2*c(OPT), and the given path is a valid 2 approximation of the optimal tour.
+
+**need to add details on Christofides optimization of this*
+
+
+[Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/shortest_path.py)
+
+
+**Approximate Shortest Path All Priority Locations**
+
+![Alt text](figs/shortest_path.png?raw=true "Shortest Path")
 
 
 ## Conclusion
@@ -126,6 +157,7 @@ Emma:
 2. Greater Portland Transit District. (2023). 2023 Operating Budget. Retrieved Nov 13, 2023, from https://gpmetro.org/DocumentCenter/View/1497/2023-Operating-Budget--Approved-22323?bidId=
 3. Google Maps. ( n.d.). [ Portland Bus Root Locations]. Retrieved December 1, 2023, from https://www.google.com/maps/d/edit?mid=1ndsALekiokpddnr-6D7I4t2-j3xU9xs&ll=43.67155787430646%2C-70.2770516&z=13
 4. Aric A. Hagberg, Daniel A. Schult and Pieter J. Swart, “Exploring network structure, dynamics, and function using NetworkX”, in Proceedings of the 7th Python in Science Conference (SciPy2008), Gäel Varoquaux, Travis Vaught, and Jarrod Millman (Eds), (Pasadena, CA USA), pp. 11–15, Aug 2008
+5. N. Christofides, Worst-case analysis of a new heuristic for the travelling salesman prob- lem, Report 388, Graduate School of Industrial Administration, Carnegie Mellon Uni- versity, 1976.
 
 ***Not sure if needed***
 
