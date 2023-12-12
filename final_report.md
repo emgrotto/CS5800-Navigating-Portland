@@ -103,28 +103,81 @@ Our original plan to find the optimal transportation route connecting priority l
 
 We began by applying Dijkstra's algorithm via the Networkx.shorteset_path method, selecting a source node from our list of priority nodes. We quickly realized, while this will give us the shortest path between each other priority node and the source node, it did not generate a path that included ALL of the priority nodes. 
 
-We considered apply Dijkstra's in a greedy stepwise manner: select the shortest distance between nodes in the priority node list, then select the node eith the shortest path from the second node and so on, iterating through the remaining nodes in the priority node list. We realized though, that this was not guaranteed to give us the shortest path between all nodes of the graph.
+We considered apply Dijkstra's in a greedy stepwise manner: select the shortest distance between nodes in the priority node list, then select the node with the shortest path from the second node and so on, iterating through the remaining nodes in the priority node list. We realized, however, that this was not guaranteed to give us the shortest path between all nodes of the graph.
 
 We then considered finding all the simple paths in the graph, filtering by only paths including our priority nodes, and selecting the path with the minimum cost. 
 
-While this would have likely given us the optimal answer, we utilized the topics learned from Module 1 and judged the time complexity to be prohibitive as our graph has 2735 nodes and 3548 edges. This method would have a time complexity of O(n!).
+While this would have likely given us the optimal answer, we utilized the topics learned from Module 1 and judged the time complexity to be prohibitive as our graph has 2735 nodes and 3548 edges. This method would have a time complexity of O(n!) where n =  number of nodes in the graph.
 
-Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again very time complex. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This again had a time complexity of O(n!).
+Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again very time complex. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This also had a time complexity of O(n!).
 
 As we continued to contemplate our problem, we recognized that it was very close in nature to the Traveling Salesman Problem (TSP) that we learned about in Module 11. Although we were not attempting to generate a Hamiltonian Cycle, we were seeking the minimum cost path that would take us through a set of nodes in a graph- essentially a TSP tour of a certain subset of the graph, without returning to the starting node. Since TSP in NP Complete, there is no way to generate an optimal output in polynomial time. This led us to conclude that the best method to find our ideal bus route would be to utilize the methods learned in Module 12 and generate an approximation algorithm for a modified TSP tour.
 
-We were able to again to utilize some of the existing methods in the Networkx package and generate an approximate minimum cost path through all of our priority nodes. The approximation we utilized was the Christofides algorithm.
+We were able to again to utilize the existing methods in the Networkx package and generate an approximate minimum cost path through all of our priority nodes. The approximation we utilized was a Metric Approximation, utilizing Christofides algorithm.
 
 The Christofides algorithm begins by creating a minimum spanning tree (M) for the desired nodes. A set is created of odd-degree vertices (oV) from M. oV contains, at a minimum, all the leaf nodes of M and by the handshaking lemma, oV has an even number of vertices. A minimum weight perfect matching is made from the complete graph of oV. The edges of that matching are combined with the edges of M and a graph is formed with all nodes having an even degree. A Eulerian tour is made of the new graph. Duplicate nodes are removed from the path, generating an approximate minimum cost tour<sup>5</sup>.
 
-Christofides algorithm, like other metric TSP algorithms, utilizes the triangle inequality to prove the validity of the tour that is generated. That is, for any 3 nodes in a complete weighted graph with non-negative edgeds {u,v,w} that form a triangle: c(u,w) <= c(u,v) + c(v,w). Since our graph is complete, has non-negative weighted edges, and is built on an X,Y coordinate plane, the triangle inequality does hold and the tour generated by removing duplicate nodes form the Eulerian tour is valid. Since the algorithm utilizes a minimum spanning tree, we know that each edge added to that tree is the minimum valued edge that connects the existing tree (starting from an empty tree) to the remaining nodes that are not yet in the tree. Such edges are added until no nodes remain unconnected. So we know that the tree that is generated both spans all nodes of our subset, and is a set of minimum valued edges that span those nodes. So Christofides algorithm has generated an approximate shortest path between all our priority nodes.
+Christofides algorithm, like other metric TSP algorithms, utilizes the triangle inequality to prove the validity of the tour that is generated. That is, for any 3 nodes in a complete weighted graph G(V,E) with non-negative with edges:
 
-When considering the execution of Metric TSP algorithms, we know that the cost of the MST generated by the approximation algorithm will always be less than or equal to the cost c of the optimal solution (OPT), as an MST can be generated by deleting any edge from a tour and all edges are non- negative. So c(MST) <= c(OPT tour). Since we are using a Eulerian tour (W) to traverse the MST, we will visit every edge/vertex exactly twice. So the cost for this walk will be equal to two times the cost of the tree itself: c(W) = 2c(MST).
-Combining these two factors, we know that c(W) <= 2*c(OPT).
-Since we know the triangle equality holds, then we know that the path that is generated when duplicate nodes are removed from W must have a value less than the W, so for our final resulting path P: c(P) <= c(W) <= 2*c(OPT). Therefore the c(P) <= 2*c(OPT), and the given path is a valid 2 approximation of the optimal tour.
 
-**need to add details on Christofides optimization of this*
 
+$\ (u,v),(v,w), (u,w)$
+
+$\ c(u,w) <= c(u,v) + c(v,w)$
+
+
+Since our graph is complete, has non-negative weigh edges, and is built on an X,Y coordinate plane, the triangle inequality does hold and the tour generated by removing duplicate nodes form the Eulerian tour is valid. Since the algorithm utilizes a minimum spanning tree, we know that each edge added to that tree is the minimum valued edge that connects the existing tree (starting from an empty tree) to the remaining nodes that are not yet in the tree. Such edges are added until no nodes remain unconnected. So we know that the tree that is generated both spans all nodes of our subgraph that includes priority nodes, and is a set of minimum valued edges spanning those nodes. So Christofides algorithm has generated an approximate shortest path between all our priority nodes.
+
+
+When considering the execution of Metric TSP algorithms, we know that the cost of the MST generated by the approximation algorithm will always be less than or equal to the cost c of the optimal solution (OPT), as a MST can be generated by deleting any edge from a tour, and all edges are non- negative.
+
+$\ c(MST) <= c(OPT)$ 
+
+Since we are using a Eulerian tour (W) to traverse the MST, we will visit every edge/vertex exactly twice. So the cost for this walk will be equal to two times the cost of the tree itself
+
+$\ c(W) = 2c(MST)$
+
+Combining these two factors, we know that 
+
+$\ c(W) <= 2*c(OPT)$
+
+Since we know the triangle equality holds, then we know that the path that is generated when duplicate nodes are removed from W must have a value less than the W, so for our final resulting path $\ P $
+
+$\ c(P) <= c(W) <= 2*c(OPT) \rightarrow c(P) <= 2*c(OPT)$ 
+
+The Christofides further improves this approximation. 
+Let us define:
+
+$\ P $  to be the perfect matching of oV
+
+$\ T' $ be the OPT TSP tour for G
+
+$\ N' $ be the OPT TSP tour of oV
+
+$\ R_1 , \ R_2$ to be two perfect matchings of oV on the edges of $\ N'$ taken alternately.
+
+Then:
+
+$\ c(P) = min \ c(R_1,R_2) $ 
+
+as stated above
+
+$\ c(P) \le \ c(N')/2$   
+as the minium of R<sub>1</sub> and R<sub>2</sub> must be at most the average of the N'
+
+$\ c(P) \le \ c(T')/2$ 
+
+as T' is created from oV and thus only contains the G(V) with an odd number of edges and the triangle inequality tells us the cost of our tour will be no worse than $\ c(T')$  and $\ c(N')$ will be no worse than $\ c(T')$ as N' is the optimal tour on oV
+
+When we combine the edges of P with the edges of the MST previously generated we have:
+
+$\ c(P) \le \ c(T')/2$
+
+$\ c(MST) \le c(T')$
+
+$\ c(P) + c(MST) \le \ 3c(T')/2$
+
+The Christofides tour has generated a 3/2 approximation of the optimal TSP tour. Since our "tour" is truly a path, there is one less edge than in a true TSP tour and is thus less costly, so clearly the approximation would also yield at least a 3/2 approximation of our path.
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/shortest_path.py)
 
