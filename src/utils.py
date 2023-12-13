@@ -3,6 +3,9 @@ import pandas as pd
 import geopandas as gpd
 
 def read_data():
+    """
+    Returns a geodataframe of all the priority locations, a geodataframe of all the intersections, and a geodataframe of all the roads
+    """
     groc = pd.read_csv('data/Portland Bus Route Locations- Grocery Stores.csv')
     scho = pd.read_csv('data/Portland Bus Route Locations- Schools.csv')
     hc = pd.read_csv('data/Portland Bus Route Locations- Healthcare Facilities.csv')
@@ -20,6 +23,9 @@ def read_data():
     return all_gdf, intersections, roads
 
 def load_graph(roads):
+    """
+    Returns a graph of the roads
+    """
     G = nx.Graph()
     # populate edges as roads with their length as weight
     for i in range(len(roads)):
@@ -37,6 +43,9 @@ def load_graph(roads):
     return G
 
 def get_largest_component_as_graph(G):
+    """
+    Returns the largest connected component of the graph
+    """
     # get largest connected component
     largest_component = max(nx.connected_components(G), key=len)
     # create subgraph of largest connected component

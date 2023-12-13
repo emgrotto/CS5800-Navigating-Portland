@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 import geopandas as gpd
-from shapely.geometry import shape, LineString
+from shapely.geometry import LineString
 import contextily as ctx
 import matplotlib.pyplot as plt
 
@@ -29,7 +29,6 @@ def get_gis_data():
     # initialize lists to store data
     attributes = []
     geometry = []
-
 
     # iterate fetching batches of data, 1000 at a time until there is not more data left
     while True:

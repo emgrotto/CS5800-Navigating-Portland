@@ -9,15 +9,17 @@ from utils import load_graph, read_data
 # import data
 all_gdf, intersections, roads = read_data()
 
-# plot priority locations data
 def gen_plot():
+    """
+    plot priority locations data with a basemap
+    """
     ax = all_gdf.plot(figsize=(10, 8), column = 'description', categorical=True,legend=True)
     ax.axis('off')
     ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=all_gdf.crs)
     plt.suptitle('Portland Priority Locations', fontsize=10) 
     plt.savefig('figs/priority_locations.png')
 
-#gen_plot()
+gen_plot()
 
 G = load_graph(roads)
 
@@ -72,21 +74,3 @@ nx.draw(
 )
 ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=intersections.crs)
 plt.savefig(f'figs/shortest_path.png', bbox_inches='tight')
-
-path = tsp(G, nodes=loc_list, cycle=True)
-sub_graph = G.subgraph(path)
-locations = {loc: (Point(loc).x, Point(loc).y) for loc in path}
-
-fig, ax = plt.subplots(figsize=(50, 50))
-nx.draw(
-    sub_graph,
-    locations,
-    ax = ax,
-    node_size=60,
-    width=8,
-    node_color="k",
-    edge_color="k",
-    alpha=0.8,
-)
-ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=intersections.crs)
-plt.savefig(f'figs/shortest_cycle.png', bbox_inches='tight')

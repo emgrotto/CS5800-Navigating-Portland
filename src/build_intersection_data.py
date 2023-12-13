@@ -8,7 +8,9 @@ from shapely.geometry import Point
 gdf = gpd.read_file('data/portland_roads.geojson')
 
 def plot(data, name):
-    # plot data with a basemap
+    """
+    plot data with a basemap
+    """
     ax = data.plot(aspect=1, figsize=(60, 30), color="k", linewidth=5, markersize=1)
     ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=data.crs)
     plt.suptitle(f'Portland Roads: {name}', fontsize=20)
@@ -18,9 +20,11 @@ congress = gdf[gdf['strtname'] == 'CONGRESS ST']
 plot(congress, "congress")
 
 def get_intersections(data):
-    # build intersection distionary
+    """
+    build and return intersection distionary
     # key: tuple of intersection coordinates
     # value: list of indexes of roads that intersect at that intersection
+    """
     intersections = {}
     for i in range(len(data)):
         # get coordinates of road
@@ -48,10 +52,12 @@ def get_intersections(data):
     return intersections
 
 def get_dataframe(intersections):
-    # build dataframe of intersections
+    """
+    build and return dataframe of intersections
     # index: tuple of intersection coordinates
     # columns: list of indexes of roads that intersect at that intersection
     # values: number of roads that intersect at that intersection
+    """
     df = pd.DataFrame(index=intersections.keys(), columns=['intersection_coords', 'neighbors', 'road_indexes', 'num_roads'])
     for key in intersections:
         df.at[key, 'intersection_coords'] = key
