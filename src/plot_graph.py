@@ -1,5 +1,4 @@
 import networkx as nx
-import geopandas as gpd
 import matplotlib.pyplot as plt
 import contextily as ctx
 from shapely.geometry import Point
@@ -18,8 +17,12 @@ print("Graph information:")
 print("Number of nodes: ", G.number_of_nodes())
 print("Number of edges: ", G.number_of_edges())
 print("Number of connected components: ", nx.number_connected_components(G))
-print("max degree: ", max([val for (node, val) in G.degree()]))
-print("min degree: ", min([val for (node, val) in G.degree()]))
+degrees = [val for (node, val) in G.degree()]
+print("max degree: ", max(degrees))
+print("min degree: ", min(degrees))
+
+for i in range(1, 9):
+    print(f"Number of nodes with degree {i}: ", len([val for (node, val) in G.degree() if val == i]))
 
 # get coordinate positions from the nodes so that we can plot it against a basemap.
 nodes = list(G.nodes)

@@ -15,6 +15,8 @@ Suppose we named the starting point as the student’s living area, and Hannafor
  
 Why bus routes instead of driving routes?
 We are trying to apply Dijkstra's algorithm in our real daily life. On the one hand, some students may not own a car, on the other hand, if students can drive a car, it would be kind of/relatively meaningless to apply this algorithm in Portland city because they can drive anywhere straightforward. When using bus routes, there are some amenities that the students cannot reach out straight, it will help to build the map that the start point may need some intersection point to reach out other end points.
+
+After we finished building the graph, and applying dijkstra's algorithm in our project, there are some facts that we may dismiss before, such as this algorithm cannot totally solve all the problems we met in this project. Then we tried to use floyd warshall algorithm, but it still cannot fully solve them all. Until we try to apply TSP in our project, it did help to figure out what we want to do in the beginning of our thoughts in this project. So our final workout is slightly different from what we have proposed before, but the main purpose was the same.
  
 Amanda:
 
@@ -38,7 +40,7 @@ We began our analysis by collecting data on the road systems in Maine. Data was 
 
 ![Alt text](figs/portland_roads.png?raw=true "Raw Portalnd Road Data Mapped")
 
-Next we gathered data on priority locations utilizing Google maps. Location data for grocery stores, schools, and healthcare facilities was retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was projected onto the same coordinate system used with the road system data.
+Next we gathered data on priority locations utilizing Google maps. Location data for grocery stores, schools, and healthcare facilities were retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was projected onto the same coordinate system as the road MaineDOT data.
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/utils.py)
 
@@ -63,7 +65,7 @@ Nodes and edges were stored in an adjacency list format, utilizing a nested Pyth
 
 Next, a graph was created utilizing the Networkx Python package. Networkx is a package designed specifically for building, utilizing and manipulating complex graphs/network structures.<sup>4</sup> 
 
-This gave us an undirected, weighted graph with parameters shown below. As explained above, nodes are roda intersections, edges are road segments between intersections, and edge weights are the road segment lengths.
+This gave us an undirected, weighted graph with parameters shown below. As explained above, nodes are road intersections, edges are road segments between intersections, and edge weights are the road segment lengths.
 
 
 
@@ -101,17 +103,17 @@ We utilized some of the principles learned in Module 8- dynamic programing and M
 
 Our original plan to find the optimal transportation route connecting priority locations was to use a version of a shortest path algorithm selecting minimum distances between nodes.
 
-We began by applying Dijkstra's algorithm via the Networkx.shorteset_path method, selecting a source node from our list of priority nodes. We quickly realized, while this will give us the shortest path between each other priority node and the source node, it did not generate a path that included ALL of the priority nodes. 
+We began by applying Dijkstra's algorithm via the `Networkx.shorteset_path` method, selecting a source node from our list of priority nodes. We quickly realized, while this will give us the shortest path between each other priority node and the source node, it did not generate a path that included ALL of the priority nodes. 
 
-We considered apply Dijkstra's in a greedy stepwise manner: select the shortest distance between nodes in the priority node list, then select the node with the shortest path from the second node and so on, iterating through the remaining nodes in the priority node list. We realized, however, that this was not guaranteed to give us the shortest path between all nodes of the graph.
+We considered applying Dijkstra's in a greedy stepwise manner: select the shortest distance between nodes in the priority node list, then select the node with the shortest path from the second node and so on, iterating through the remaining nodes in the priority node list. We realized, however, that this was not guaranteed to give us the shortest path between all nodes of the graph.
 
 We then considered finding all the simple paths in the graph, filtering by only paths including our priority nodes, and selecting the path with the minimum cost. 
 
-While this would have likely given us the optimal answer, we utilized the topics learned from Module 1 and judged the time complexity to be prohibitive as our graph has 2735 nodes and 3548 edges. This method would have a time complexity of O(n!) where n =  number of nodes in the graph.
+While this would have likely given us the optimal answer, we utilized the topics learned from Module 1 and judged the time complexity to be prohibitive as our graph has 2735 nodes and 3548 edges. This method would have a time complexity of O(n!) where n = number of nodes in the graph.
 
-Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again very time complex. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This also had a time complexity of O(n!).
+Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again be very time inefficient. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This would have a time complexity of O(n^3 + m!), where n = number of nodes in the graph and m = number of priority nodes.
 
-As we continued to contemplate our problem, we recognized that it was very close in nature to the Traveling Salesman Problem (TSP) that we learned about in Module 11. Although we were not attempting to generate a Hamiltonian Cycle, we were seeking the minimum cost path that would take us through a set of nodes in a graph- essentially a TSP tour of a certain subset of the graph, without returning to the starting node. Since TSP in NP Complete, there is no way to generate an optimal output in polynomial time. This led us to conclude that the best method to find our ideal bus route would be to utilize the methods learned in Module 12 and generate an approximation algorithm for a modified TSP tour.
+As we continued to contemplate our problem, we recognized that it was very close in nature to the Traveling Salesman Problem (TSP) that we learned about in Module 11. Although we were not attempting to generate a Hamiltonian Cycle, we were seeking the minimum cost path that would take us through a set of nodes in a graph- essentially a TSP tour of a certain subset of the graph, without returning to the starting node. Since TSP is in NP Complete, there is no way to generate an optimal output in polynomial time. This led us to conclude that the best method to find our ideal bus route would be to utilize the methods learned in Module 12 and generate an approximation algorithm for a modified TSP tour.
 
 We were able to again to utilize the existing methods in the Networkx package and generate an approximate minimum cost path through all of our priority nodes. The approximation we utilized was a Metric Approximation, utilizing Christofides algorithm.
 
@@ -189,15 +191,19 @@ The Christofides tour has generated a 3/2 approximation of the optimal TSP tour.
 
 ## Conclusion
 
-*based on your analysis, answer your question. Then discuss the
-weaknesses and limitations of your project and suggest avenues for future research. And finally,
-conclude with a paragraph (one separate paragraph per group member) describing what you
-learned from this project, and whether this report will be of any value to you – either for a
-future Northeastern course, or for some other project or endeavour you wish to pursue upon
-your graduation from Northeastern.
-Please note: I will not give you a “page limit” because some reports will naturally be longer than others.
-Your goal is to address each of the points listed above: if you do that, you will do very well on this Final
-Project Report.*
+In answering the question: `Given Portland roads as the network we travel on. Can we determine optimal locations for a given number of bus stops, such that we are minimizing distance to amenities?` we successfully implemented the algorithms and modules we learned in this Algorithms course. This project provides an interesting analysis of the efficacy of Portland's current bus stop locations. What we found is that GPMetro's bus stop locations and routes are quite similar to the Traveling Salesman path, with a few interesting notes:
+
+* GPMetro busses travel on major roads and tend not to take detours. This makes sense as Portland is generally quite walkable so small detours may not be helpful and increase the length of the route.
+* The areas our path reached are covered by the various bus routes with a few exceptions.
+* A few of the Portland bus routes travel in a loop, which provides access to more residential areas that the Traveling Salemen Path misses.
+
+A drawback to our process was that the Graph is quite large with some of the roads being redundant (as in 2 short roads side by side could somehow be combined). This made it difficult to explore algorithms that have worse time complexity, such as Floyd Warshall and opt for an approximation algorithm. We also only included amenities in our data, but for a more realistic analysis we may want to consider other locations:
+
+* high population areas
+* low parking areas
+* other desirable locations such as parks, restaurants, offices etc.
+
+This could provide a more real-life analysis, exploring questions like: What single route might residents be taking using Dijkstra's.
 
 Our analysis shows that it is possible to generate an approximate ideal bus route utilizing graph algorithms. Due to the complexity of the problem we were not able to generate a true optimal path, but rather 3/2 approximation. We visually compared our path with the existing bus routes in Portland:
                                                                                  
@@ -213,11 +219,22 @@ It is likely the Metro routes consider additional factors we did not address wit
 
 Shuiming chen:
 
+After we finished this project, I have a more in-depth understanding about dijkstra's algorithm, floyd warshall and TSP.  We have learnt these in class but mostly focus on the theorem part, but this time the project helps me to really use these in practical scenarios though we haven’t applied them all.  I mainly focus on the front part of this project, including in the beginning of applying dijkstra's algorithm as our main algorithm, etc.
+
 Amanda:
 I learned quite a bit from this project. I was excited to learn of the availability of GIS data for the road systems in Maine. I think I will definitely utilize that for future projects. This project taught me a lot about applying theories learned in class to real world problems. Particularly, I learned about the challenges that come from trying to adapt and utilize a textbook solution when your problem is not textbook perfect.
 
 
 Emma:
+
+There are a couple things I learned from this project: 
+
+* working on an adapting problem - exploring different algorithms with real data and contending with related drawbacks that adjust the solution.
+* wrangling Geo data quickly and using packages like shapely, geopandas and NetworkX.
+* when working with Geo data plotting on a basemap regularily is very important to verify each step in the code!
+
+This was a very valuable exercise from me as I'd like to continue doing projects like this one to learn more about the city I live in. I think this was a needed sample of the work I'll be doing next semester in PPUA 5262 Big Data for Cities.
+
 
 ## References
 1. Huitt, W. (2007). Maslow's hierarchy of needs. Educational Psychology Interactive. Valdosta, GA: Valdosta State University. Retrieved Nov 13, 2023 from, http://www.edpsycinteractive.org/topics/regsys/maslow.html
