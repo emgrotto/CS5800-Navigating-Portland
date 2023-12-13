@@ -15,6 +15,8 @@ Suppose we named the starting point as the student’s living area, and Hannafor
  
 Why bus routes instead of driving routes?
 We are trying to apply Dijkstra's algorithm in our real daily life. On the one hand, some students may not own a car, on the other hand, if students can drive a car, it would be kind of/relatively meaningless to apply this algorithm in Portland city because they can drive anywhere straightforward. When using bus routes, there are some amenities that the students cannot reach out straight, it will help to build the map that the start point may need some intersection point to reach out other end points.
+
+After we finished building the graph, and applying dijkstra's algorithm in our project, there are some facts that we may dismiss before, such as this algorithm cannot totally solve all the problems we met in this project. Then we tried to use floyd warshall algorithm, but it still cannot fully solve them all. Until we try to apply TSP in our project, it did help to figure out what we want to do in the beginning of our thoughts in this project. So our final workout is slightly different from what we have proposed before, but the main purpose was the same.
  
 Amanda:
 
@@ -109,7 +111,7 @@ We then considered finding all the simple paths in the graph, filtering by only 
 
 While this would have likely given us the optimal answer, we utilized the topics learned from Module 1 and judged the time complexity to be prohibitive as our graph has 2735 nodes and 3548 edges. This method would have a time complexity of O(n!) where n =  number of nodes in the graph.
 
-Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again very time complex. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This also had a time complexity of O(n!).
+Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again very time complex. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This also had a bad time complexity.
 
 As we continued to contemplate our problem, we recognized that it was very close in nature to the Traveling Salesman Problem (TSP) that we learned about in Module 11. Although we were not attempting to generate a Hamiltonian Cycle, we were seeking the minimum cost path that would take us through a set of nodes in a graph- essentially a TSP tour of a certain subset of the graph, without returning to the starting node. Since TSP in NP Complete, there is no way to generate an optimal output in polynomial time. This led us to conclude that the best method to find our ideal bus route would be to utilize the methods learned in Module 12 and generate an approximation algorithm for a modified TSP tour.
 
@@ -189,17 +191,13 @@ The Christofides tour has generated a 3/2 approximation of the optimal TSP tour.
 
 ## Conclusion
 
-*based on your analysis, answer your question. Then discuss the
-weaknesses and limitations of your project and suggest avenues for future research. And finally,
-conclude with a paragraph (one separate paragraph per group member) describing what you
-learned from this project, and whether this report will be of any value to you – either for a
-future Northeastern course, or for some other project or endeavour you wish to pursue upon
-your graduation from Northeastern.
-Please note: I will not give you a “page limit” because some reports will naturally be longer than others.
-Your goal is to address each of the points listed above: if you do that, you will do very well on this Final
-Project Report.*
+Our team this time successfully implemented the algorithms and modules we have learnt in this algorithm course. Our project closely connects to people who live in Portland and by applying it they can make a plan for amenities in one time without considering their changing plan.
+The real-time data collection is our first and biggest challenge during the process of our project, the choices of vertices and the weight of edges, and the way of building the graph etc. Besides that, when applying the algorithm in this project, the graph’s situation and people's needs in real life makes our project cannot only rely on the single pair of vertices which use the shortest path of dijkstra's algorithm to calculate what we need. And the same of applying floyd warshall algorithm to our project.
+In the future research of our project, there are some changes we can do to make it more adaptable to people’s needs. Such as the graph can be a dynamic one, which means there will be more vertices and edges in it. And we can also provide the dijkstra's algorithm version for those who only visit one place each time. Or floyd warshall algorithm version for people’s frequent go and out needs.
+However, there are still some weaknesses and limitations of our project, first of all, the whole graph we built has some limitations, because we only take some important locations to apply the Christofides algorithm, people in their real life can be various and the same of their destinations. Besides that, the accuracy of vertices and edges is still our priority thing to consider if people apply their places with our project. And the graph here is totally static, the dynamic graph maybe more attached to our life.
 
 Shuiming chen:
+After we finished this project, I have a more in-depth understanding about dijkstra's algorithm, floyd warshall and TSP.  We have learnt these in class but mostly focus on the theorem part, but this time the project helps me to really use these in practical scenarios though we haven’t applied them all.  I mainly focus on the front part of this project, including in the beginning of applying dijkstra's algorithm as our main algorithm, etc.
 
 Amanda:
 
