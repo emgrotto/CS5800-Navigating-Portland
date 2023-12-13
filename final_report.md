@@ -1,4 +1,6 @@
-
+---
+Author: ""
+---
 
 # Final Report: Navigating Portland
 Authors: Emma Morse, Shuiming Chen, Amanda Haskell
@@ -23,13 +25,15 @@ Amanda:
 Public transportation is a valuable resource to students, as discussed above. It’s also a valuable resource to those who have limited access to other modes of transportation. These may be physical limitations, financial limitations, or any number of other challenges.
 All people have basic needs that must be met. This is a fundamental principle I frequently utilize as a healthcare worker, based on  Maslow’s hierarchy of needs<sup>1</sup>. First physiological needs must be met (food, shelter), then safety needs (health, family) and so on. We have chosen to develop an optimized public transportation route including locations like grocery stores, healthcare facilities, etc… as a way to meet the needs of the residents of Portland.
 
+<div style="page-break-after: always;"></div>
+
 Emma:
 
 Greater Portland’s primary public transportation system: GPMetro is an organization that is very tightly funded. In 2022 GPMetro’s annual budget was $13,144,976<sup>2</sup> and needed to seek out federal and state funding to maintain, upgrade or expand facilities. Because of this GPMetro struggles to expand or add routes due to the added cost of employees, buses and facility space. Nevertheless, the bus system has an annual ridership of almost 1.25 million (still recovering from COVID-19) making it a critical transportation option for Southern Mainers. 
 Having researched this, it is clear that this is a precious resource that does not get the funding it needs. Being a pedestrian first resident of Portland, I have on many occasions attempted to use the bus system and found it to be both infrequent and bus-stops inconveniently placed for my desired destination. Without learning to drive and accepting the cost of car ownership there are unfortunately still areas of Portland and surrounding towns that are inaccessible to me. We cannot necessarily explore the issue of frequency in this project, however; I am interested to learn if the routes have been designed optimally. Are there alternative routes that are more efficient and hence cheaper to maintain?
 
 
-## Analysis and Results
+## Problem Formulation, Implementation and Experimentation
 
 ### Data Collection
 We began our analysis by collecting data on the road systems in Maine. Data was retrieved from the Maine DOT open data arcgis server, and filtered to include only roads in the city of Portland. <sup>3</sup>  The data was saved such that location geometries were transformed into a X,Y format on a 2D plane- this was accomplished by using the EPSG 3857 coordinate system.
@@ -40,7 +44,10 @@ We began our analysis by collecting data on the road systems in Maine. Data was 
 
 ![Alt text](figs/portland_roads.png?raw=true "Raw Portalnd Road Data Mapped")
 
-Next we gathered data on priority locations utilizing Google maps. Location data for grocery stores, schools, and healthcare facilities were retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was projected onto the same coordinate system as the road MaineDOT data.
+
+Next we gathered data on priority locations utilizing Google maps<sup>4</sup>. Location data for grocery stores, schools, and healthcare facilities were retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was projected onto the same coordinate system as the road MaineDOT data.
+
+<div style="page-break-after: always;"></div>
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/utils.py)
 
@@ -56,6 +63,8 @@ Nodes for the graph were created from road intersections. This was accomplished 
 Weighted edges were created from the road segments between intersections, with a weight equal to the length of said segment.
 
 Nodes and edges were stored in an adjacency list format, utilizing a nested Python dictionary data structure. The node(intersection) point coordinates were used as keys, with a dictionary as a value. The value dictionary includes the "neighbors" key, which is associated with a list of adjacent nodes(intersections). Additionally, road indexes, number or roads, and geometry data is stored in the nested dictionaries.
+
+<div style="page-break-after: always;"></div>
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/build_intersection_data.py)
 
@@ -75,6 +84,8 @@ This gave us an undirected, weighted graph with parameters shown below. As expla
 **Road Data Graph Mapped**
 
 ![Alt text](figs/connected_components.png?raw=true "Road Data Graph")
+
+<div style="page-break-after: always;"></div>
 
 **Graph Information**
 
@@ -115,9 +126,12 @@ Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest
 
 As we continued to contemplate our problem, we recognized that it was very close in nature to the Traveling Salesman Problem (TSP) that we learned about in Module 11. Although we were not attempting to generate a Hamiltonian Cycle, we were seeking the minimum cost path that would take us through a set of nodes in a graph- essentially a TSP tour of a certain subset of the graph, without returning to the starting node. Since TSP is in NP Complete, there is no way to generate an optimal output in polynomial time. This led us to conclude that the best method to find our ideal bus route would be to utilize the methods learned in Module 12 and generate an approximation algorithm for a modified TSP tour.
 
-We were able to again to utilize the existing methods in the Networkx package and generate an approximate minimum cost path through all of our priority nodes. The approximation we utilized was a Metric Approximation, utilizing Christofides algorithm.
 
-The Christofides algorithm begins by creating a minimum spanning tree (M) for the desired nodes. A set is created of odd-degree vertices (oV) from M. oV contains, at a minimum, all the leaf nodes of M and by the handshaking lemma, oV has an even number of vertices. A minimum weight perfect matching is made from the complete graph of oV. The edges of that matching are combined with the edges of M and a graph is formed with all nodes having an even degree. A Eulerian tour is made of the new graph. Duplicate nodes are removed from the path, generating an approximate minimum cost tour<sup>6</sup>.
+## Results and Analysis
+
+We were able to again to utilize the existing methods in the Networkx package and generate an approximate minimum cost path through all of our priority nodes. The approximation we utilized was a Metric Approximation, implemented with Christofides algorithm.
+
+The Christofides algorithm begins by creating a minimum spanning tree (M) for the desired nodes. A set is created of odd-degree vertices (oV) from M. oV contains, at a minimum, all the leaf nodes of M and by the handshaking lemma, oV has an even number of vertices. A minimum weight perfect matching is made from the complete graph of oV. The edges of that matching are combined with the edges of M and a graph is formed with all nodes having an even degree. A Eulerian tour is made of the new graph. Duplicate nodes are removed from the path, and an approximate minimum cost tour is generated<sup>6</sup>.
 
 Christofides algorithm, like other metric TSP algorithms, utilizes the triangle inequality to prove the validity of the tour that is generated. That is, for any 3 nodes in a weighted, undirected graph G(V,E) with non-negative with edges:
 
@@ -128,35 +142,34 @@ $\ (u,v),(v,w), (u,w)$
 $\ c(u,w) <= c(u,v) + c(v,w)$
 
 
-Since our undirected, has non-negative weigh edges, and is built on an X,Y coordinate plane, the triangle inequality does hold and the tour generated by removing duplicate nodes form the Eulerian tour is valid. Since the algorithm utilizes a minimum spanning tree, we know that each edge added to that tree is the minimum valued edge that connects the existing tree (starting from an empty tree) to the remaining nodes that are not yet in the tree. Such edges are added until no nodes remain unconnected. So we know that the tree that is generated both spans all nodes of our subgraph that includes priority nodes, and is a set of minimum valued edges spanning those nodes. So Christofides algorithm has generated an approximate shortest path between all our priority nodes.
+Since our graph is undirected, has non-negative weight edges, and is built on an X,Y coordinate plane, the triangle inequality does hold and the tour generated by removing duplicate nodes form the Eulerian tour is valid. Since the algorithm utilizes a minimum spanning tree, we know that each edge added to that tree is the minimum valued edge that connects the existing tree (starting from an empty tree) to the remaining nodes that are not yet in the tree. Such edges are added until no nodes remain unconnected. So we know that the tree that is generated both spans all nodes of our subgraph that includes priority nodes, and is a set of minimum valued edges spanning those nodes. So Christofides algorithm has generated an approximate shortest path between all our priority nodes.
 
 
-When considering the execution of Metric TSP algorithms, we know that the cost of the MST generated by the approximation algorithm will always be less than or equal to the cost c of the optimal solution (OPT), as a MST can be generated by deleting any edge from a tour, and all edges are non- negative.
+When considering the execution of Metric TSP algorithms, we know that the cost of the MST generated by the approximation algorithm will always be less than or equal to the cost c of the optimal solution (OPT) of a graph G, as a MST can be generated by deleting any edge from a tour, and all edges are non- negative.
 
 $\ c(MST) <= c(OPT)$ 
 
-Since we are using a Eulerian tour (W) to traverse the MST, we will visit every edge/vertex exactly twice. So the cost for this walk will be equal to two times the cost of the tree itself
+Since we are using a Eulerian tour (W) to traverse the MST, we will visit every edge/vertex exactly twice. So the cost for this walk will be equal to two times the cost of the tree itself.
 
 $\ c(W) = 2c(MST)$
 
-Combining these two factors, we know that 
+Combining these two factors, we know that:
 
 $\ c(W) <= 2*c(OPT)$
 
-Since we know the triangle equality holds, then we know that the path that is generated when duplicate nodes are removed from W must have a value less than the W, so for our final resulting path $\ P $
+Since we know the triangle equality holds, the path that is generated when duplicate nodes are removed from W must have a value less than W, so for our final resulting path $\ P $
 
 $\ c(P) <= c(W) <= 2*c(OPT) \rightarrow c(P) <= 2*c(OPT)$ 
 
 The Christofides further improves this approximation. 
+
 Let us define:
 
-$\ P $  to be the perfect matching of oV
-
-$\ T' $ be the OPT TSP tour for G
+$\ P $  to be the perfect matching of the complete graph of oV
 
 $\ N' $ be the OPT TSP tour of oV
 
-$\ R_1 , \ R_2$ to be two perfect matchings of oV on the edges of $\ N'$ taken alternately.
+$\ R_1 , \ R_2$ to be two separate perfect matchings of the G(oV) on the edges of $\ N'$ taken independently.
 
 Then:
 
@@ -164,27 +177,29 @@ $\ c(P) = min \ c(R_1,R_2) $
 
 as stated above
 
+
 $\ c(P) \le \ c(N')/2$   
-as the minium of R<sub>1</sub> and R<sub>2</sub> must be at most the average of the N'
+as the minium of R<sub>1</sub> and R<sub>2</sub> will be at most the average of $\ N'$
 
-$\ c(P) \le \ c(T')/2$ 
+$\ c(P) \le \ c(OPT)/2$ 
 
-as T' is created from oV and thus only contains the G(V) with an odd number of edges and the triangle inequality tells us the cost of our tour will be no worse than $\ c(T')$  and $\ c(N')$ will be no worse than $\ c(T')$ as N' is the optimal tour on oV
+as oV is a subset of G(V) (and thus smaller than G(V)), the optimal tour of oV must be less than $\ c(OPT)$, and $\ N' $ is the optimal tour of oV.
+
 
 When we combine the edges of P with the edges of the MST previously generated we have:
 
-$\ c(P) \le \ c(T')/2$
+$\ c(P) \le \ c(OPT)/2$
 
-$\ c(MST) \le c(T')$
+$\ c(MST) \le c(OPT)$ (as shown in the Metric TSP proof)
 
-$\ c(P) + c(MST) \le \ 3c(T')/2$
+$\ c(P) + c(MST) \le \ 3c(OPT)/2$
 
-The Christofides tour has generated a 3/2 approximation of the optimal TSP tour. Since our "tour" is truly a path, there is one less edge than in a true TSP tour and is thus less costly, so clearly the approximation would also yield at least a 3/2 approximation of our path.
+The Christofides algorithm has generated a 3/2 approximation of the optimal TSP tour. Since our desired "tour" is truly a path, there is one less edge than in a true TSP tour and is thus less costly. Clearly the algorithm will also yield at least a 3/2 approximation of our path.
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/shortest_path.py)
 
 
-**Approximate Shortest Path All Priority Locations**
+**Approximate Shortest Path Including All Priority Locations**
 
 ![Alt text](figs/shortest_path.png?raw=true "Shortest Path")
 
@@ -209,8 +224,8 @@ Our analysis shows that it is possible to generate an approximate ideal bus rout
                                                                                  
 
 <p flout = "left">
-<img src=figs/shortest_path.png width="200">
-<img src=figs/metro_downtown.png width="250">
+<img src=figs/shortest_path.png width="300">
+<img src=figs/metro_downtown.png width="300">
 </p>
 
 While there are some similarities, there are substantial differences as well.
@@ -245,8 +260,333 @@ This was a very valuable exercise from me as I'd like to continue doing projects
 5. Aric A. Hagberg, Daniel A. Schult and Pieter J. Swart, “Exploring network structure, dynamics, and function using NetworkX”, in Proceedings of the 7th Python in Science Conference (SciPy2008), Gäel Varoquaux, Travis Vaught, and Jarrod Millman (Eds), (Pasadena, CA USA), pp. 11–15, Aug 2008
 6. N. Christofides, Worst-case analysis of a new heuristic for the travelling salesman prob- lem, Report 388, Graduate School of Industrial Administration, Carnegie Mellon Uni- versity, 1976.
 
-
+<div style="page-break-after: always;"></div>
 
 ## Appendix
 ### Code
 [Link to project GitHub repo](https://github.com/emgrotto/CS5800-Navigating-Portland/tree/main)
+
+
+```
+Filename: extract_data.py
+
+
+def get_gis_data():
+    """
+    This function fetches data from the Maine GIS website and returns a dataframe
+    """
+
+    # Base url to fetch data
+    base_url = "https://gis.maine.gov/arcgis/rest/services/dot/MaineDOT_OpenData/MapServer/52/query"
+
+    # Query parameters
+    params = {
+        'where': '1=1',
+        'outFields': '*',
+        'outSR': 3857,
+        'f': 'json'
+    }
+
+    # initialize variables for paginating through data
+    batch_size = 1000
+    offset = 0
+
+    # initialize lists to store data
+    attributes = []
+    geometry = []
+
+    # iterate fetching batches of data, 1000 at a time until there is not more data left
+    while True:
+        params['resultOffset'] = offset
+        response = requests.get(base_url, params=params)
+
+        if response.status_code == 200:
+
+            data = response.json()
+
+            # Extract features from the response and add them to the result
+            features = data.get('features', [])
+            attributes.extend([feature.get("attributes", {}) for feature in features])
+            geometry.extend([feature.get("geometry", {}) for feature in features])
+            
+            # break out of loop if this is the last batch of data
+            if len(features) < batch_size:
+                break
+                
+            offset += batch_size
+
+        else:
+
+            print(f"Failed to retrieve data. Status code: {response.status_code}")
+            break
+
+    # create dataframe with attributes and geometry data
+    df = pd.DataFrame(attributes)
+    df['geometry'] = geometry
+
+    return df
+
+def convert_to_line_string(geo):
+    """
+    This function converts the geometry column into a shapely LineString
+    """
+    path = [tuple(point) for point in geo['paths'][0]]
+    return LineString(path)
+
+
+# run main 
+if __name__ == '__main__':
+    # get data
+    print('Fetching data...')
+    data = get_gis_data()
+    portland_df = data[data['townname'] == 'Portland']
+
+    # convert geometry column into shapely format so that we can use geopandas
+    print('Converting data to geopandas dataframe...')
+    portland_df_copy = portland_df.copy()
+
+    # convert geometry column into shapely LineString
+    print('Converting geometry column to LineString...')
+    portland_df_copy['geometry'] = portland_df_copy['geometry'].apply(convert_to_line_string)
+
+    # create geopandas dataframe
+    print('Creating geopandas dataframe...')
+    portland_gdf = gpd.GeoDataFrame(portland_df_copy, geometry='geometry')
+
+    # save geopandas dataframe to file
+    print('Saving geopandas dataframe to file...')
+    portland_gdf.to_file('data/portland_roads.geojson', driver='GeoJSON', crs='epsg:3857')
+
+    ax = portland_gdf.plot(aspect=1, figsize=(60, 30), color="k")
+    ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=portland_gdf.crs)
+    plt.savefig('figs/portland_roads.png')
+```
+
+
+```
+Filename: build_intersections.py
+
+
+# read in data from geojson and plot with a basemap
+gdf = gpd.read_file('data/portland_roads.geojson')
+
+def plot(data, name):
+    """
+    plot data with a basemap
+    """
+    ax = data.plot(aspect=1, figsize=(60, 30), color="k", linewidth=5, markersize=1)
+    ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=data.crs)
+    plt.suptitle(f'Portland Roads: {name}', fontsize=20)
+    plt.savefig(f'figs/{name}.png', bbox_inches='tight')
+
+congress = gdf[gdf['strtname'] == 'CONGRESS ST']
+plot(congress, "congress")
+
+def get_intersections(data):
+    """
+    build and return intersection distionary
+    # key: tuple of intersection coordinates
+    # value: list of indexes of roads that intersect at that intersection
+    """
+    intersections = {}
+    for i in range(len(data)):
+        # get coordinates of road
+        road = data.iloc[i]
+        
+        first_coord = road["geometry"].coords[0]
+        last_coord = road["geometry"].coords[-1]
+        
+        first_coord = (int(first_coord[0]), int(first_coord[1]))
+        last_coord = (int(last_coord[0]), int(last_coord[1]))
+
+        # add intersection to dictionary
+        if (first_coord[0], first_coord[1]) not in intersections:
+            intersections[(first_coord[0], first_coord[1])] = {"roads": [road["OBJECTID"]], "neighbors": [(last_coord[0], last_coord[1])]}
+        else:
+            intersections[(first_coord[0], first_coord[1])]["roads"].append(road["OBJECTID"])
+            intersections[(first_coord[0], first_coord[1])]["neighbors"].append((last_coord[0], last_coord[1]))
+
+        if (last_coord[0], last_coord[1]) not in intersections:
+            intersections[(last_coord[0], last_coord[1])] = {"roads": [road["OBJECTID"]], "neighbors": [(first_coord[0], first_coord[1])]}
+        else:
+            intersections[(last_coord[0], last_coord[1])]["roads"].append(road["OBJECTID"])
+            intersections[(last_coord[0], last_coord[1])]["neighbors"].append((first_coord[0], first_coord[1]))
+
+    return intersections
+
+def get_dataframe(intersections):
+    """
+    build and return dataframe of intersections
+    # index: tuple of intersection coordinates
+    # columns: list of indexes of roads that intersect at that intersection
+    # values: number of roads that intersect at that intersection
+    """
+    df = pd.DataFrame(index=intersections.keys(), columns=['intersection_coords', 'neighbors', 'road_indexes', 'num_roads'])
+    for key in intersections:
+        df.at[key, 'intersection_coords'] = key
+        df.at[key, 'neighbors'] = intersections[key]["neighbors"]
+        df.at[key, 'road_indexes'] = intersections[key]["roads"]
+        df.at[key, 'num_roads'] = len(intersections[key]["roads"])
+    return df
+
+intersections = get_intersections(gdf)
+df = get_dataframe(intersections)
+sorted_intersections = df.sort_values(by=['num_roads'], ascending=False)
+
+# get top 10 intersections
+top_10_intersections = sorted_intersections.head(10)
+print(top_10_intersections)
+indexes = []
+for i in range(len(top_10_intersections)):
+    intersection = top_10_intersections.iloc[i]
+    indexes += intersection['road_indexes']
+
+# filter original dataframe to only include roads that intersect at first intersection
+first_10_intersection_roads_df = gdf[gdf['OBJECTID'].isin(indexes)]
+
+# plot roads that intersect at first intersection
+plot(first_10_intersection_roads_df, "first_10_intersection_roads")
+
+sorted_intersections.reset_index(drop=True, inplace=True)
+# convert to geodataframe
+sorted_intersections['geometry'] = sorted_intersections['intersection_coords'].apply(Point)
+sorted_intersections = gpd.GeoDataFrame(sorted_intersections, geometry='geometry')
+# convert fields to string
+sorted_intersections['intersection_coords'] = sorted_intersections['intersection_coords'].astype(str)
+sorted_intersections['road_indexes'] = sorted_intersections['road_indexes'].astype(str)
+sorted_intersections['neighbors'] = sorted_intersections['neighbors'].astype(str)
+# write to geojson
+sorted_intersections.to_file('data/intersections.geojson', driver='GeoJSON', crs='epsg:3857')
+
+# plot intersections
+plot(sorted_intersections, "sorted_intersections")
+```
+
+```
+Filname: utils.py
+
+
+def read_data():
+    """
+    Returns a geodataframe of all the priority locations, a geodataframe of all the intersections, and a geodataframe of all the roads
+    """
+    groc = pd.read_csv('data/Portland Bus Route Locations- Grocery Stores.csv')
+    scho = pd.read_csv('data/Portland Bus Route Locations- Schools.csv')
+    hc = pd.read_csv('data/Portland Bus Route Locations- Healthcare Facilities.csv')
+    all = pd.concat([groc,scho,hc])
+    all['WKT'] = gpd.GeoSeries.from_wkt(all['WKT'])
+    all_gdf = gpd.GeoDataFrame(all, geometry = 'WKT').set_crs("EPSG:4326")
+    all_gdf = all_gdf.to_crs("EPSG:3857")
+
+    intersections = gpd.read_file('data/intersections.geojson')
+    # set geometry to the geometry column
+    intersections = intersections.set_geometry('geometry')
+
+    roads = gpd.read_file('data/portland_roads.geojson')
+    
+    return all_gdf, intersections, roads
+
+def load_graph(roads):
+    """
+    Returns a graph of the roads
+    """
+    G = nx.Graph()
+    # populate edges as roads with their length as weight
+    for i in range(len(roads)):
+        # get coordinates of road
+        road = roads.iloc[i]
+        length = road["Shape_Length"]
+        # add road as edge to graph, having its start and end coordinates as the intersection nodes
+        first_coord = road["geometry"].coords[0]
+        last_coord = road["geometry"].coords[-1]
+        # only add if its not a road to itself
+        if first_coord != last_coord:
+            # casting to int to approximate coordinates as nodes
+            G.add_edge((int(first_coord[0]), int(first_coord[1])), (int(last_coord[0]), int(last_coord[1])), weight=length)
+            
+    return G
+
+def get_largest_component_as_graph(G):
+    """
+    Returns the largest connected component of the graph
+    """
+    # get largest connected component
+    largest_component = max(nx.connected_components(G), key=len)
+    # create subgraph of largest connected component
+    G = G.subgraph(largest_component)
+    return G
+```
+
+```
+Filename: shortest_path.py
+
+
+# import data
+all_gdf, intersections, roads = read_data()
+
+def gen_plot():
+    """
+    plot priority locations data with a basemap
+    """
+    ax = all_gdf.plot(figsize=(10, 8), column = 'description', categorical=True,legend=True)
+    ax.axis('off')
+    ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=all_gdf.crs)
+    plt.suptitle('Portland Priority Locations', fontsize=10) 
+    plt.savefig('figs/priority_locations.png')
+
+gen_plot()
+
+G = load_graph(roads)
+
+# loop intersections and all_gdf and add columns for distance from each node to points of interest
+# store distance
+for i in range(len(all_gdf)):
+    point = all_gdf.iloc[i,0]
+    intersections[all_gdf.iloc[i,1]] = intersections['geometry'].distance(point)
+
+print(intersections.head())
+
+# extract minimum distances and create list of priority nodes
+loc_list = []
+for i in range(4,36):
+    min_node = intersections.iloc[:,i].idxmin()
+    tup = (intersections.iloc[min_node].geometry.x ,intersections.iloc[min_node].geometry.y)
+    loc_list.append(tup)
+
+print(len(loc_list))
+print(loc_list[0])
+
+# using simple path does not exectute d/t running time
+shortest_paths = nx.shortest_path(G, source = loc_list[0], weight='weight')
+shortest_path_cost = nx.shortest_path_length(G, source = loc_list[0], weight='weight')
+
+print(f"Shortest path from {loc_list[0]} to {loc_list[1]}:")
+print(shortest_paths[loc_list[1]])
+print(shortest_path_cost[loc_list[1]])
+
+for node in loc_list:
+    path = shortest_paths[node]
+    if set(loc_list).issubset(path):
+        print (shortest_paths[node])
+        
+    
+# find the shortest path between the two points
+tsp = nx.approximation.traveling_salesman_problem
+path = tsp(G, nodes=loc_list, cycle=False)
+sub_graph = G.subgraph(path)
+locations = {loc: (Point(loc).x, Point(loc).y) for loc in path}
+
+fig, ax = plt.subplots(figsize=(50, 50))
+nx.draw(
+    sub_graph,
+    locations,
+    ax = ax,
+    node_size=60,
+    width=8,
+    node_color="k",
+    edge_color="k",
+    alpha=0.8,
+)
+ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=intersections.crs)
+plt.savefig(f'figs/shortest_path.png', bbox_inches='tight')
+```
