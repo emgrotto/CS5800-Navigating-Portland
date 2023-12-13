@@ -40,7 +40,7 @@ We began our analysis by collecting data on the road systems in Maine. Data was 
 
 ![Alt text](figs/portland_roads.png?raw=true "Raw Portalnd Road Data Mapped")
 
-Next we gathered data on priority locations utilizing Google maps. Location data for grocery stores, schools, and healthcare facilities was retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was projected onto the same coordinate system used with the road system data.
+Next we gathered data on priority locations utilizing Google maps. Location data for grocery stores, schools, and healthcare facilities were retrieved in WKT format, downloaded as separate csv files, then merged into one geodataframe. This location data was projected onto the same coordinate system as the road MaineDOT data.
 
 [Link to relevant source file](https://github.com/emgrotto/CS5800-Navigating-Portland/blob/main/src/utils.py)
 
@@ -65,7 +65,7 @@ Nodes and edges were stored in an adjacency list format, utilizing a nested Pyth
 
 Next, a graph was created utilizing the Networkx Python package. Networkx is a package designed specifically for building, utilizing and manipulating complex graphs/network structures.<sup>4</sup> 
 
-This gave us an undirected, weighted graph with parameters shown below. As explained above, nodes are roda intersections, edges are road segments between intersections, and edge weights are the road segment lengths.
+This gave us an undirected, weighted graph with parameters shown below. As explained above, nodes are road intersections, edges are road segments between intersections, and edge weights are the road segment lengths.
 
 
 
@@ -103,15 +103,15 @@ We utilized some of the principles learned in Module 8- dynamic programing and M
 
 Our original plan to find the optimal transportation route connecting priority locations was to use a version of a shortest path algorithm selecting minimum distances between nodes.
 
-We began by applying Dijkstra's algorithm via the Networkx.shorteset_path method, selecting a source node from our list of priority nodes. We quickly realized, while this will give us the shortest path between each other priority node and the source node, it did not generate a path that included ALL of the priority nodes. 
+We began by applying Dijkstra's algorithm via the `Networkx.shorteset_path` method, selecting a source node from our list of priority nodes. We quickly realized, while this will give us the shortest path between each other priority node and the source node, it did not generate a path that included ALL of the priority nodes. 
 
-We considered apply Dijkstra's in a greedy stepwise manner: select the shortest distance between nodes in the priority node list, then select the node with the shortest path from the second node and so on, iterating through the remaining nodes in the priority node list. We realized, however, that this was not guaranteed to give us the shortest path between all nodes of the graph.
+We considered applying Dijkstra's in a greedy stepwise manner: select the shortest distance between nodes in the priority node list, then select the node with the shortest path from the second node and so on, iterating through the remaining nodes in the priority node list. We realized, however, that this was not guaranteed to give us the shortest path between all nodes of the graph.
 
 We then considered finding all the simple paths in the graph, filtering by only paths including our priority nodes, and selecting the path with the minimum cost. 
 
-While this would have likely given us the optimal answer, we utilized the topics learned from Module 1 and judged the time complexity to be prohibitive as our graph has 2735 nodes and 3548 edges. This method would have a time complexity of O(n!) where n =  number of nodes in the graph.
+While this would have likely given us the optimal answer, we utilized the topics learned from Module 1 and judged the time complexity to be prohibitive as our graph has 2735 nodes and 3548 edges. This method would have a time complexity of O(n!) where n = number of nodes in the graph.
 
-Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again very time complex. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This also had a bad time complexity.
+Next we examined utilizing the Floyd-Warshall algorithm to generate the shortest path between all pairs of nodes in the graph, then finding the shortest weighted path between pairs of nodes in our priority node list. While generating the all pairs shortest paths would be reasonable to execute, finding the shortest path of our priority nodes would again be very time inefficient. It would require finding all permutations of the priority nodes, calculating the path cost for each, and finding the minimum cost path among those. This also had a bad time complexity of O(n!).
 
 As we continued to contemplate our problem, we recognized that it was very close in nature to the Traveling Salesman Problem (TSP) that we learned about in Module 11. Although we were not attempting to generate a Hamiltonian Cycle, we were seeking the minimum cost path that would take us through a set of nodes in a graph- essentially a TSP tour of a certain subset of the graph, without returning to the starting node. Since TSP in NP Complete, there is no way to generate an optimal output in polynomial time. This led us to conclude that the best method to find our ideal bus route would be to utilize the methods learned in Module 12 and generate an approximation algorithm for a modified TSP tour.
 
@@ -191,7 +191,7 @@ The Christofides tour has generated a 3/2 approximation of the optimal TSP tour.
 
 ## Conclusion
 
-Our team this time successfully implemented the algorithms and modules we have learnt in this algorithm course. Our project closely connects to people who live in Portland and by applying it they can make a plan for amenities in one time without considering their changing plan.
+Our team successfully implemented the algorithms and modules we have learnt in this algorithm course. Our project closely connects to people who live in Portland and by applying it they can make a plan for amenities in one time without considering their changing plan.
 The real-time data collection is our first and biggest challenge during the process of our project, the choices of vertices and the weight of edges, and the way of building the graph etc. Besides that, when applying the algorithm in this project, the graph’s situation and people's needs in real life makes our project cannot only rely on the single pair of vertices which use the shortest path of dijkstra's algorithm to calculate what we need. And the same of applying floyd warshall algorithm to our project.
 In the future research of our project, there are some changes we can do to make it more adaptable to people’s needs. Such as the graph can be a dynamic one, which means there will be more vertices and edges in it. And we can also provide the dijkstra's algorithm version for those who only visit one place each time. Or floyd warshall algorithm version for people’s frequent go and out needs.
 However, there are still some weaknesses and limitations of our project, first of all, the whole graph we built has some limitations, because we only take some important locations to apply the Christofides algorithm, people in their real life can be various and the same of their destinations. Besides that, the accuracy of vertices and edges is still our priority thing to consider if people apply their places with our project. And the graph here is totally static, the dynamic graph maybe more attached to our life.
