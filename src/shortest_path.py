@@ -64,7 +64,7 @@ nx.draw(
     sub_graph,
     locations,
     ax = ax,
-    node_size=40,
+    node_size=60,
     width=8,
     node_color="k",
     edge_color="k",
@@ -72,3 +72,21 @@ nx.draw(
 )
 ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=intersections.crs)
 plt.savefig(f'figs/shortest_path.png', bbox_inches='tight')
+
+path = tsp(G, nodes=loc_list, cycle=True)
+sub_graph = G.subgraph(path)
+locations = {loc: (Point(loc).x, Point(loc).y) for loc in path}
+
+fig, ax = plt.subplots(figsize=(50, 50))
+nx.draw(
+    sub_graph,
+    locations,
+    ax = ax,
+    node_size=60,
+    width=8,
+    node_color="k",
+    edge_color="k",
+    alpha=0.8,
+)
+ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=15, crs=intersections.crs)
+plt.savefig(f'figs/shortest_cycle.png', bbox_inches='tight')
