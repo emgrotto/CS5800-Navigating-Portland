@@ -197,6 +197,7 @@ In the future research of our project, there are some changes we can do to make 
 However, there are still some weaknesses and limitations of our project, first of all, the whole graph we built has some limitations, because we only take some important locations to apply the Christofides algorithm, people in their real life can be various and the same of their destinations. Besides that, the accuracy of vertices and edges is still our priority thing to consider if people apply their places with our project. And the graph here is totally static, the dynamic graph maybe more attached to our life.
 
 Shuiming chen:
+
 After we finished this project, I have a more in-depth understanding about dijkstra's algorithm, floyd warshall and TSP.  We have learnt these in class but mostly focus on the theorem part, but this time the project helps me to really use these in practical scenarios though we haven’t applied them all.  I mainly focus on the front part of this project, including in the beginning of applying dijkstra's algorithm as our main algorithm, etc.
 
 Amanda:
