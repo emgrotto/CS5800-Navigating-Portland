@@ -39,3 +39,15 @@ It also plots and saves 3 figures:
 This script reads in [data/portland_roads.geojson](./data/portland_roads.geojson)) and [data/intersections.geojson](./data/intersections.geojson) data. It used the road data to populate a [NetworkX](https://networkx.org/documentation/latest/tutorial.html) graph and the intersection data to validate graph info.
 
 It then plots each connected component of the graph as different colors onto a basemap. We have multiple connected components as Portland has islands! This plot is saved to [figs/connected_components.png](./figs/connected_components.png). For this project we will only focus on the largest connected component as it contains the roads of mainland Portland!
+
+### [utils.py](./src/utils.py)
+
+This script provides 3 helper functions:
+
+* function to return geodataframes for data in [data/portland_roads.geojson](./data/portland_roads.geojson)), [data/intersections.geojson](./data/intersections.geojson) data and the 3 bus route location files in `data/`. 
+* function that creates and returns a [NetworkX](https://networkx.org/documentation/latest/tutorial.html) graph from road data.
+* function that returns the largest component of a graph.
+
+### [shortest_path.py](./src/shortest_path.py)
+
+This script uses the roads graph provided by [utils.py](./src/utils.py) and finds the shortest path containing all nodes closest to the locations defined by the 3 bus route location files in `data/` using [NetworkX.tsp](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.approximation.traveling_salesman.traveling_salesman_problem.html). It also plots the path on a basemap saved to [figs/shortest_path.png](./figs/shortest_path.png)
