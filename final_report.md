@@ -131,7 +131,7 @@ As we continued to contemplate our problem, we recognized that it was very close
 
 We were able to again to utilize the existing methods in the Networkx package and generate an approximate minimum cost path through all of our priority nodes. The approximation we utilized was a Metric Approximation, implemented with Christofides algorithm.
 
-The Christofides algorithm begins by creating a minimum spanning tree (M) for the desired nodes. A set is created of odd-degree vertices (oV) from M. oV contains, at a minimum, all the leaf nodes of M and by the handshaking lemma, oV has an even number of vertices. A minimum weight perfect matching is made from the complete graph of oV. The edges of that matching are combined with the edges of M and a graph is formed with all nodes having an even degree. A Eulerian tour is made of the new graph. Duplicate nodes are removed from the path, and an approximate minimum cost tour is generated<sup>6</sup>.
+The Christofides algorithm begins by creating a minimum spanning tree (M) for the desired nodes. A set is created of odd-degree vertices (oV) from M. oV contains, at a minimum, all the leaf nodes of M and by the handshaking lemma, oV has an even number of vertices. A minimum weight perfect matching is made from the complete graph of oV. The edges of that matching are combined with the edges of M and a graph is formed with all nodes having an even degree. A Eulerian tour is made of the new graph. Duplicate nodes are removed from the path, and an approximate minimum cost tour is generated<sup>6,7</sup>.
 
 Christofides algorithm, like other metric TSP algorithms, utilizes the triangle inequality to prove the validity of the tour that is generated. That is, for any 3 nodes in a weighted, undirected graph G(V,E) with non-negative with edges:
 
@@ -193,6 +193,8 @@ $\ c(P) \le \ c(OPT)/2$
 $\ c(MST) \le c(OPT)$ (as shown in the Metric TSP proof)
 
 $\ c(P) + c(MST) \le \ 3c(OPT)/2$
+
+<sup>6,7</sup>
 
 The Christofides algorithm has generated a 3/2 approximation of the optimal TSP tour. Since our desired "tour" is truly a path, there is one less edge than in a true TSP tour and is thus less costly. Clearly the algorithm will also yield at least a 3/2 approximation of our path.
 
@@ -258,7 +260,8 @@ This was a very valuable exercise from me as I'd like to continue doing projects
 3. Maine Department of Transportation. (n.d.). MaineDOT Public Roads. ArcGIS Hub. Retrieved December 13, 2023, from  https://maine.hub.arcgis.com/datasets/maine::mainedot-public-roads/about
 4. Google Maps. ( n.d.). [ Portland Bus Root Locations]. Retrieved December 1, 2023, from https://www.google.com/maps/d/edit?mid=1ndsALekiokpddnr-6D7I4t2-j3xU9xs&ll=43.67155787430646%2C-70.2770516&z=13
 5. Aric A. Hagberg, Daniel A. Schult and Pieter J. Swart, “Exploring network structure, dynamics, and function using NetworkX”, in Proceedings of the 7th Python in Science Conference (SciPy2008), Gäel Varoquaux, Travis Vaught, and Jarrod Millman (Eds), (Pasadena, CA USA), pp. 11–15, Aug 2008
-6. N. Christofides, Worst-case analysis of a new heuristic for the travelling salesman prob- lem, Report 388, Graduate School of Industrial Administration, Carnegie Mellon Uni- versity, 1976.
+6. N. Christofides, Worst-case analysis of a new heuristic for the travelling salesman prob- lem, Report 388, Graduate School of Industrial Administration, Carnegie Mellon University, 1976.
+7. Kozen, D. "Christofides's 3/2-Approximation for Metric TSP" Design and Analysis of Algorithms, Computer Sciences, Cornell University. Course handout.
 
 <div style="page-break-after: always;"></div>
 
